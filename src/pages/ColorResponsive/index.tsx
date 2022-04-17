@@ -34,19 +34,28 @@ export const ColorResponsive = () => {
   useEffect(() => {
     const alteraCor = () => {
       const width = window.innerWidth;
-      const index = breakpoints.findIndex(breakpoint => width < breakpoint);
+      const index = breakpoints.findIndex((breakpoint) => width < breakpoint);
       const breakpointIndex = index === -1 ? 0 : index;
       setColor(colors[breakpointIndex]);
-    }
+    };
 
     alteraCor();
-    window.addEventListener('resize', alteraCor);
-    return () => {
-      window.removeEventListener('resize', alteraCor);
-    }
-  }, []);
 
-  console.log('==== re-render')
+    function debounce(func: () => void, delay: number) {
+      let timer: ReturnType<typeof setTimeout> ;
+      return function () {
+        clearTimeout(timer);
+        timer = setTimeout(func, delay);
+      };
+    }
+
+    window.addEventListener("resize", debounce(alteraCor, 500));
+    return () => {
+      window.removeEventListener("resize", debounce(alteraCor, 500));
+    };
+  }, []);
+  
+  console.log('========= re-render')
   return (
     <div className={
       classNames(
