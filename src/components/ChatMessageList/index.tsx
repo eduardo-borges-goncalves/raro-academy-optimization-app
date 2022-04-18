@@ -1,5 +1,5 @@
-import { MutableRefObject, useEffect, useRef } from "react";
-import { useChat } from "../../contexts/chat.context";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { useChat, useMessages } from "../../contexts/chat.context";
 import { useScroll } from "../../hooks/useScroll";
 import { ChatMessage } from "../ChatMessage";
 import { ChatMessageListBottomScrollButton } from "../ChatMessageListBottomScrollButton";
@@ -9,7 +9,17 @@ import { MyChatMessage } from "../MyChatMessage";
 const TAMANHO_MEDIO_MENSAGEM_PX = 300;
 export const ChatMessageList = () => {
   const scrollRef: MutableRefObject<Element | null> = useRef(null);
-  const { mensagens, buscaMensagem, setMensagens } = useChat();
+  const { buscaMensagem } = useChat();
+  const { mensagens, setMensagens} = useMessages();
+
+  const [ quaisMensagens, setQuaisMensages ] = useState([...mensagens])
+
+  // pagination
+  useEffect(() => {
+    setQuaisMensages([...mensagens].splice(0, 50));
+    scrollBottom()
+  }, [mensagens]);
+
   const {
     scrollBottom,
     endOfScroll,
@@ -48,14 +58,14 @@ export const ChatMessageList = () => {
   return (
     <div id="mensagens" className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-purple scrollbar-thumb-rounded scrollbar-track-indigo-lighter scrollbar-w-2 scrolling-touch">
       {
-        [...mensagens]
-        .reverse()
-        .filter(mensagem => mensagem.texto.match(new RegExp(buscaMensagem, 'i')))
-        .map(mensagem => (
-          mensagem.autor.usuarioAtual ?
-            <MyChatMessage mensagem={ mensagem }  /> :
-            <ChatMessage mensagem={ mensagem } />
-        ))
+        [...quaisMensagens]
+          .reverse()
+          .filter(mensagem => mensagem.texto.match(new RegExp(buscaMensagem, 'i')))
+          .map(mensagem => (
+            mensagem.autor.usuarioAtual ?
+              <MyChatMessage key={mensagem.id} mensagem={ mensagem }  /> :
+              <ChatMessage key={mensagem.id} mensagem={ mensagem } />
+          ))
       }
       {
         !endOfScroll ? (

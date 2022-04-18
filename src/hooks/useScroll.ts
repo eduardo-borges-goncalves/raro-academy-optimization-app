@@ -19,7 +19,7 @@ export const useScroll = (scrollRef: MutableRefObject<Element | null>) => {
   const getDistanceFromBottom = (): number => {
     if (scrollRef.current) {
       const { scrollTop, clientHeight, scrollHeight } = scrollRef.current;
-      return Math.ceil(scrollHeight) - Math.ceil(scrollTop + clientHeight)
+      return Math.ceil(scrollHeight) - Math.ceil(scrollTop + clientHeight) // o que é scrolltop e clienHeight
     }
 
     return Infinity;

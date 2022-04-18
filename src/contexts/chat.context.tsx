@@ -11,27 +11,20 @@ const geraParticipante = (usuarioAtual = false): ParticipanteChat => ({
 })
 
 export type ChatContextProps = {
-  mensagens: Mensagem[];
-  setMensagens: (mensagens: Mensagem[]) => void;
   buscaMensagem: string;
   setBuscaMensagem: (buscaMensagem: string) => void;
   participantes: ParticipanteChat[];
   setParticipantes: (participantes: ParticipanteChat[]) => void;
-  adicionaMensagem: (texto: string, participante: ParticipanteChat) => void;
 }
 
-const ChatContext = createContext<ChatContextProps>({
-  mensagens: [],
-  setMensagens: (_: Mensagem[]) => {},
+export const ChatContext = createContext<ChatContextProps>({
   buscaMensagem: '',
   setBuscaMensagem: (_: string) => {},
   participantes: [],
   setParticipantes: (_: ParticipanteChat[]) => {},
-  adicionaMensagem: (texto: string, participante: ParticipanteChat) => {},
 });
 
 export const ChatProvider: React.FC = ({ children }) => {
-  const [ mensagens, setMensagens ] = useState<Mensagem[]>([]);
   const [ buscaMensagem, setBuscaMensagem ] = useState<string>('');
   const [ participantes, setParticipantes ] = useState<ParticipanteChat[]>([]);
 
@@ -45,6 +38,56 @@ export const ChatProvider: React.FC = ({ children }) => {
 
     // produz uma carga inicial de mensagens.
     // util para testes.
+  
+  }, []);
+  
+
+  return (
+    <ChatContext.Provider
+      value={{
+        buscaMensagem,
+        setBuscaMensagem,
+        participantes,
+        setParticipantes,
+      }}
+    >
+      {children}
+    </ChatContext.Provider>
+  );
+};
+
+export const useChat = () => {
+  const context = useContext(ChatContext);
+
+  if (!context) {
+    throw new Error('Você somente pode usar este hook debaixo de um <AuthContextProvider>');
+  }
+
+  return context;
+};
+
+
+export type MessagesContextProps = {
+  mensagens: Mensagem[];
+  setMensagens: (mensagens: Mensagem[]) => void;
+  adicionaMensagem: (texto: string, participante: ParticipanteChat) => void;
+}
+
+export const MessagesContext = createContext<MessagesContextProps>({
+  mensagens: [],
+  setMensagens: (_: Mensagem[]) => {},
+  adicionaMensagem: (texto: string, participante: ParticipanteChat) => {},
+});
+
+export const MessagesProvider: React.FC = ({ children }) => {
+  const [ mensagens, setMensagens ] = useState<Mensagem[]>([]);
+  
+  useEffect(() => {
+    const participantes = [
+      geraParticipante(false), 
+      geraParticipante(true),  
+    ];
+
     Array.from(new Array(100)).forEach(() => {
       const id = faker.datatype.number({ min: 0, max: 1 });
       const autor = participantes[id];
@@ -52,8 +95,6 @@ export const ChatProvider: React.FC = ({ children }) => {
       adicionaMensagem(texto, autor);
     });
 
-    // produz novas mensgens em um intervalo regular.
-    // util para testes.
     const interval = setInterval(() => {
       const texto = faker.lorem.words(6);
       adicionaMensagem(texto, participantes[0]);
@@ -72,33 +113,28 @@ export const ChatProvider: React.FC = ({ children }) => {
       data: new Date(),
       lida: false
     }
-
     setMensagens(mensagens => [ mensagem, ...mensagens ]);
   };
 
   return (
-    <ChatContext.Provider
+    <MessagesContext.Provider
       value={{
         mensagens,
         setMensagens,
-        buscaMensagem,
-        setBuscaMensagem,
-        participantes,
-        setParticipantes,
         adicionaMensagem,
       }}
     >
       {children}
-    </ChatContext.Provider>
+    </MessagesContext.Provider>
   );
 };
 
-export const useChat = () => {
-  const context = useContext(ChatContext);
+export const useMessages = () => {
+  const context = useContext(MessagesContext);
 
   if (!context) {
     throw new Error('Você somente pode usar este hook debaixo de um <AuthContextProvider>');
   }
-
   return context;
 };
+
