@@ -1,6 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { useChat, useMessages } from "../../contexts/chat.context";
 import { useScroll } from "../../hooks/useScroll";
+import { Button } from "../Button";
 import { ChatMessage } from "../ChatMessage";
 import { ChatMessageListBottomScrollButton } from "../ChatMessageListBottomScrollButton";
 import { MyChatMessage } from "../MyChatMessage";
@@ -11,14 +12,15 @@ export const ChatMessageList = () => {
   const scrollRef: MutableRefObject<Element | null> = useRef(null);
   const { buscaMensagem } = useChat();
   const { mensagens, setMensagens} = useMessages();
-
+  
   const [ quaisMensagens, setQuaisMensages ] = useState([...mensagens])
-
+  const [ num, setNum ] = useState(50)
+  
   // pagination
   useEffect(() => {
-    setQuaisMensages([...mensagens].splice(0, 50));
-    scrollBottom()
-  }, [mensagens]);
+    setQuaisMensages([...mensagens].splice(0, num));
+    endOfScroll && scrollBottom()
+  }, [mensagens, num]);
 
   const {
     scrollBottom,
@@ -26,7 +28,7 @@ export const ChatMessageList = () => {
     updateEndOfScroll,
     getDistanceFromBottom
   } = useScroll(scrollRef);
-
+  
   useEffect(() => {
     scrollRef.current = document.querySelector('#mensagens');
     lerNovasMensagens();
@@ -54,9 +56,12 @@ export const ChatMessageList = () => {
     });
     setMensagens([...mensagens]);
   };
-
+  
   return (
     <div id="mensagens" className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-purple scrollbar-thumb-rounded scrollbar-track-indigo-lighter scrollbar-w-2 scrolling-touch">
+      <div className="w-max flex justify-center flex-row content-center m-auto opacity-40 hover:opacity-60">
+        <Button onClick={() => setNum(num+50)}>carregar mensagens</Button>
+      </div>
       {
         [...quaisMensagens]
           .reverse()
